@@ -1,0 +1,119 @@
+html, body {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 100%;
+}
+body {
+	width: calc( 100% - 4px );
+	height: calc( 100% - 4px );
+	border: 2px solid olive;
+}
+
+#div-amendement, #div-pjpl {
+	display: block;
+	position: absolute;
+	top: 2px;
+	left: 2px;
+	height: calc( 100% - 8px );
+	border: 2px solid orange;
+	width: calc( 50% - 4px );
+	margin: 0;
+	padding: 0;
+	/*overflow: none;*/
+}
+
+#div-pjpl {
+	font-size: 100%;
+	height: calc( 100% - 8px );
+	left: calc( 50% + 2px );
+	width: calc( 50% - 8px );
+	overflow-y: scroll;
+}
+
+#select, #t {
+	display: block;
+}
+
+#select {
+	height: 10%;
+}
+
+/* * * * * * * * * * * * * * * * */
+
+#amendement {
+	margin: 10px;
+	border: 1px solid black;
+	padding: 5px;
+	background-color: #eeeeee;
+	background-color: cornsilk;
+	background-color: wheat;
+	width: calc( 100% - 32px );
+	height: calc( 100% - 40px );
+	font-family: sans-serif;
+}
+
+p {
+	margin: 0.3em 0;
+}
+
+#div-pjpl .texte {
+	/*height: calc( 90% - 4px );*/
+	border: 2px solid red;
+	padding: 0.2em;
+}
+
+#div-pjpl .texte:not(:last-child) {
+	margin-bottom: 0.2em;
+}
+
+#div-pjpl .texte h1 {
+	font-size: 1em;
+}
+
+#div-pjpl .texte h2 {
+	font-size: 1em;
+}
+
+/* * * * * * * * * * * * * * * * */
+
+        table.diff {font-family:Courier; border:medium;}
+        .diff_header {background-color:#e0e0e0}
+        td.diff_header {text-align:right}
+        .diff_next {background-color:#c0c0c0}
+        .diff_add {background-color:#aaffaa}
+        .diff_chg {background-color:#ffff77}
+        .diff_sub {background-color:#ffaaaa}
+
+/* * * * * * * * * * * * * * * * */
+
+#div-pjpl div.texte div.article.added {
+	background-color: chartreuse;
+}
+
+#div-pjpl div.texte div.article.removed {
+	background-color: lightsalmon;
+}
+
+#div-pjpl ins {
+	background-color: chartreuse;
+	text-decoration: none;
+}
+
+#div-pjpl del {
+	background-color: lightsalmon;
+	text-decoration: none;
+}
+
+#div-pjpl del + ins, #div-pjpl ins + del {
+	margin-left: 0.2em;
+}
+
+#div-pjpl div.texte pre {
+	white-space: pre-wrap;
+}
+
+#div-pjpl p.error {
+	background-color: hotpink;
+}
+
