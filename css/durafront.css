@@ -22,6 +22,9 @@ body {
 	padding: 0;
 	/*overflow: none;*/
 }
+#div-amendement {
+	text-align: center;
+}
 
 #div-pjpl {
 	font-size: 100%;
@@ -42,14 +45,26 @@ body {
 /* * * * * * * * * * * * * * * * */
 
 #amendement {
-	margin: 10px;
+	margin: 10px 0;
 	border: 1px solid black;
 	padding: 5px;
 	background-color: #eeeeee;
 	background-color: cornsilk;
 	background-color: wheat;
 	width: calc( 100% - 32px );
-	height: calc( 100% - 40px );
+	height: calc( 50% - 40px );
+	font-family: sans-serif;
+}
+
+#article-pjl-ppl {
+	margin: 10px 0;
+	border: 1px solid black;
+	padding: 5px;
+	background-color: #eeeeee;
+	background-color: cornsilk;
+	background-color: wheat;
+	width: calc( 100% - 32px );
+	height: calc( 50% - 40px );
 	font-family: sans-serif;
 }
 
@@ -105,7 +120,7 @@ p {
 	text-decoration: none;
 }
 
-#div-pjpl del + ins, #div-pjpl ins + del {
+#div-pjpl del + ins {
 	margin-left: 0.2em;
 }
 
@@ -116,4 +131,5 @@ p {
 #div-pjpl p.error {
 	background-color: hotpink;
 }
+
 

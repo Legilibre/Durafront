@@ -66,9 +66,13 @@ class CollectDiffsVisitor(duralex.AbstractVisitor):
             return
         if self.current_law_type == 'code':
             law_name = self.current_law_type + ' ' + self.current_law_id
+            article_id = self.current_article_id
+        elif self.current_law_type == None and self.current_law_date == None and self.current_law_id == None:
+            law_name = 'anonymous law'
+            article_id = 'anonymous article'
         else:
             law_name = self.current_law_type + ' ' + self.current_law_date + ' ' + self.current_law_id
-        article_id = self.current_article_id
+            article_id = self.current_article_id
         if law_name not in self.diffs:
             self.diffs[law_name] = {}
         if article_id not in self.diffs[law_name]:
@@ -109,14 +113,38 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             self.send_error(400)
             return
 
+        try:
+            data = json.loads(data)
+            amendement = data['texteAmendement'] if 'texteAmendement' in data else None
+            article = data['texteArticle'] if 'texteArticle' in data else None
+            numeroTexte = data['numeroTexte'] if 'numeroTexte' in data else None
+            numeroArticle = data['numeroArticle'] if 'numeroArticle' in data else None
+            numeroAmendement = data['numeroAmendement'] if 'numeroAmendement' in data else None
+        except:
+            amendment = data
+            article = None
+            numeroTexte = None
+            numeroArticle = None
+            numeroAmendement = None
+
+        if False and amendement and numeroArticle and numeroTexte: # 
+            article = getArticleFromTricoteuses(numeroTexte, numeroArticle)
+        elif False and numeroAmendement and numeroTexte:
+            uid = 'AMANR5L15' + 'SEA717460' + 'B' + numeroTexte + 'P0D1N' + numeroAmendement
+            amendement, numeroArticle = getAmendmentFromTricoteuses(numeroTexte, numeroAmendement)
+            article = getArticleFromTricoteuses(numeroTexte, numeroArticle)
+        elif not amendement:
+            self.send_error(400)
+            return
+
         json_tree = ''
         diff = ''
         if self.path == '/rawtree':
-            json_tree = self.handle_rawtree(data)
+            json_tree = self.handle_rawtree(amendment)
         elif self.path == '/tree':
-            json_tree = self.handle_tree(data)
+            json_tree = self.handle_tree(amendment)
         elif self.path == '/diff':
-            diff = self.handle_diff(data)
+            diff = self.handle_diff(amendement, article)
 
         if json_tree:
             self.send_response(200)
@@ -167,7 +195,7 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
         return json_tree
 
-    def handle_diff(self, text):
+    def handle_diff(self, text, article=None):
 
         tree = duralex.tree.create_node(None, {'content': text})
 
@@ -183,10 +211,7 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         duralex.DeleteEmptyChildrenVisitor().visit(tree)
 
         sedlex.AddArcheoLexFilenameVisitor.AddArcheoLexFilenameVisitor("/opt/Archeo-Lex/textes/articles/codes").visit(tree)
-        try:
-            sedlex.AddDiffVisitor.AddDiffVisitor().visit(tree)
-        except:
-            pass
+        sedlex.AddDiffVisitor.AddDiffVisitor(article).visit(tree)
 
         duralex.DeleteParentVisitor().visit(tree)
         json_tree = json.dumps(tree, sort_keys=True, indent=2, ensure_ascii=False)
@@ -210,9 +235,9 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
         #print(exactdiffs)
 
-        exactdiffs['duralex'] = tree
+        data = { 'data': exactdiffs, 'duralex': tree }
 
-        return json.dumps(exactdiffs, sort_keys=True, indent=2, ensure_ascii=False)
+        return json.dumps(data, indent=None, ensure_ascii=False, separators=(',', ':'))
 
     def mergeExactDiffs(self, exactdiffs, texts):
 
