@@ -197,24 +197,34 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
     def handle_diff(self, text, article=None):
 
-        tree = duralex.tree.create_node(None, {'content': text})
+        errors_diff = False
+        try:
+            tree = duralex.tree.create_node(None, {'content': text})
 
-        duralex.alinea_parser.parse_alineas(text, tree)
-        duralex.ResolveLookbackReferencesVisitor().visit(tree)
-        duralex.ForkReferenceVisitor().visit(tree)
-        duralex.ResolveFullyQualifiedDefinitionsVisitor().visit(tree)
-        duralex.ResolveFullyQualifiedReferencesVisitor().visit(tree)
-        duralex.FixMissingCodeOrLawReferenceVisitor().visit(tree)
-        duralex.SortReferencesVisitor().visit(tree)
-        duralex.SwapDefinitionAndReferenceVisitor().visit(tree)
-        duralex.RemoveQuotePrefixVisitor().visit(tree)
-        duralex.DeleteEmptyChildrenVisitor().visit(tree)
+            duralex.alinea_parser.parse_alineas(text, tree)
+            duralex.ResolveLookbackReferencesVisitor().visit(tree)
+            duralex.ForkReferenceVisitor().visit(tree)
+            duralex.ResolveFullyQualifiedDefinitionsVisitor().visit(tree)
+            duralex.ResolveFullyQualifiedReferencesVisitor().visit(tree)
+            duralex.FixMissingCodeOrLawReferenceVisitor().visit(tree)
+            duralex.SortReferencesVisitor().visit(tree)
+            duralex.SwapDefinitionAndReferenceVisitor().visit(tree)
+            duralex.RemoveQuotePrefixVisitor().visit(tree)
+            duralex.DeleteEmptyChildrenVisitor().visit(tree)
 
-        sedlex.AddArcheoLexFilenameVisitor.AddArcheoLexFilenameVisitor("/opt/Archeo-Lex/textes/articles/codes").visit(tree)
-        sedlex.AddDiffVisitor.AddDiffVisitor(article).visit(tree)
+            sedlex.AddArcheoLexFilenameVisitor.AddArcheoLexFilenameVisitor("/opt/Archeo-Lex/textes/articles/codes").visit(tree)
+            sedlex.AddDiffVisitor.AddDiffVisitor(article).visit(tree)
+        except Exception as e:
+            if len(e.args):
+                errors_diff = e.args[0]
+            else:
+                errors_diff = True
 
         duralex.DeleteParentVisitor().visit(tree)
-        json_tree = json.dumps(tree, sort_keys=True, indent=2, ensure_ascii=False)
+
+        if errors_diff:
+            data = { 'data': { 'errors': errors_diff }, 'duralex': tree }
+            return json.dumps(data, sort_keys=True, indent=None, ensure_ascii=False, separators=(',', ':'))
 
         diffsvisitor = CollectDiffsVisitor()
         diffsvisitor.visit(tree)
@@ -237,7 +247,7 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
         data = { 'data': exactdiffs, 'duralex': tree }
 
-        return json.dumps(data, indent=None, ensure_ascii=False, separators=(',', ':'))
+        return json.dumps(data, sort_keys=True, indent=None, ensure_ascii=False, separators=(',', ':'))
 
     def mergeExactDiffs(self, exactdiffs, texts):
 
