@@ -326,7 +326,7 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                     # First we search the active interval from the original text where we will insert our new piece of text
                     interval = [x for x in exactdiffsArticle['merge_indexes'].keys() if coords[0] >= x[0] and coords[0] < x[1]]
                     if len(interval) != 1:
-                        raise Exception('Internal merge error')
+                        raise Exception('Internal merge error (1,'+str(len(interval))+')')
                     interval = interval[0]
                     if not exactdiffsArticle['merge_indexes'][interval]:
                         raise Exception('Merge conflict: another amendment already deleted all or a part of this modified text')
@@ -363,7 +363,7 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                     # First we search the active interval from the original text where we will remove our new piece of text
                     interval = [x for x in exactdiffsArticle['merge_indexes'].keys() if coords[0] >= x[0] and coords[0] < x[1]]
                     if len(interval) != 1:
-                        raise Exception('Internal merge error')
+                        raise Exception('Internal merge error (2,'+str(len(interval))+')')
                     interval = interval[0]
                     if not exactdiffsArticle['merge_indexes'][interval]:
                         raise Exception('Merge conflict: another amendment already deleted all or a part of this modified text')
