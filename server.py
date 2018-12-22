@@ -140,11 +140,11 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         json_tree = ''
         diff = ''
         if self.path == '/rawtree':
-            json_tree = self.handle_rawtree(amendment)
+            json_tree = self.handle_rawtree(amendement)
         elif self.path == '/tree':
-            json_tree = self.handle_tree(amendment)
+            json_tree = self.handle_tree(amendement)
         elif self.path == '/diff':
-            diff = self.handle_diff(amendement, article)
+            json_tree = self.handle_diff(amendement, article)
 
         if json_tree:
             self.send_response(200)
@@ -152,12 +152,6 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             self.send_header("Content-Length", len(bytes(json_tree,'utf-8')))
             self.end_headers()
             self.wfile.write(bytes(json_tree, 'utf-8'))
-        elif diff:
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json; charset=utf-8")
-            self.send_header("Content-Length", len(bytes(diff,'utf-8')))
-            self.end_headers()
-            self.wfile.write(bytes(diff, 'utf-8'))
         else:
             self.send_error(500)
 
@@ -395,7 +389,7 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                     if coords[0] + coords[1] != interval[1]:
                         exactdiffsArticle['merge_indexes'][(coords[0]+coords[1], interval[1])] = (im_interval[1]+len_del_html-interval[1]+coords[0]+coords[1],im_interval[1]+len_del_html)
                     if coords[0] != interval[0]:
-                        exactdiffsArticle['merge_indexes'][(interval[0], interval[1])] = (im_interval[0], im_interval[0]+coords[0]-interval[0])
+                        exactdiffsArticle['merge_indexes'][(interval[0], coords[0])] = (im_interval[0], im_interval[0]+coords[0]-interval[0])
 
                     #print(exactdiffsArticle['merge_indexes'])
                     #print((interval, im_interval,coords,len_del_html))
