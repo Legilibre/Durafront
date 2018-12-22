@@ -59,7 +59,7 @@ $( function() {
 						if( data[text][article]['errors'] ) {
 							tmp += '<div class="article ' + data[text][article]['type'] + '"><h2>Article ' + article + '</h2><p class="error">Erreur lors de la fusion' + (data[text][article]['errors'] !== true ? ': ' + data[text][article]['errors'] : '') + '</p></div>';
 						} else {
-							tmp += '<div class="article ' + data[text][article]['type'] + '"><h2>Article ' + article + '</h2><p>' + data[text][article]['text'].trim().replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br />') + '</p></div>';
+							tmp += '<div class="article ' + data[text][article]['type'] + '"><h2>Article ' + article + '</h2><p>' + data[text][article]['text'].trim().replace(/\n\n/g,'</p><p>').replace(/<del amendement="[a-z0-9-]+"><\/del>\n<del amendement="[a-z0-9-]+"><\/del>\n<del /g,'</p><p><del ').replace(/<\/del>\n<del amendement="[a-z0-9-]+"><\/del>\n<del amendement="[a-z0-9-]+"><\/del>/g,'</del></p><p>').replace(/<ins amendement="[a-z0-9-]+"><\/ins>\n<ins amendement="[a-z0-9-]+"><\/ins>\n<ins /g,'</p><p><ins ').replace(/<\/ins>\n<ins amendement="[a-z0-9-]+"><\/ins>\n<ins amendement="[a-z0-9-]+"><\/ins>/g,'</ins></p><p>').replace(/\n/g,'<br />') + '</p></div>';
 						}
 					}
 					if( tmp ) {
