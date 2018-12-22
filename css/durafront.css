@@ -120,9 +120,11 @@ p {
 	text-decoration: none;
 }
 
-#div-pjpl del + ins, #div-pjpl ins + del {
+#div-pjpl del, #div-pjpl ins {
+	white-space: pre-wrap;
+	padding-left: 0.1em;
+	padding-right: 0.1em;
 	margin-left: 1px;
-	padding-left: 1px;
 }
 
 #div-pjpl div.texte pre {
