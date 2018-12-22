@@ -34,8 +34,7 @@ Sur SedLex :
 
 Sur Durafront :
 
-* Peu de textes sont disponibles dans le déploiement expériemental
-* Pas de possibilité de fournir un article de projet/proposition de loi (sur lequel appliquer l’amendement)
+* Peu de textes en vigueur sont disponibles dans le déploiement expériemental
 
 License
 -------
