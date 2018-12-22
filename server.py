@@ -137,6 +137,13 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             self.send_error(400)
             return
 
+        # Quick hack to be able to copy directly texts from the Assemblée’s website
+        amendement = re.sub('’', "'", amendement)
+        amendement = re.sub(r'( *»|« *)', '"', amendement)
+        if article:
+            article = re.sub('’', "'", article)
+            article = re.sub(r'( *»|« *)', '"', article)
+
         json_tree = ''
         diff = ''
         if self.path == '/rawtree':
@@ -279,6 +286,9 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                     else:
                         next = False
                 exactdiffs[text][article]['text'] = ''.join(tags)
+
+                # Quick hack because typographic apostrophes ( ’ ) are nicer than ugly apostrophes ( ' )
+                exactdiffs[text][article]['text'] = re.sub("'", '’', exactdiffs[text][article]['text'])
 
                 exactdiffs[text][article]['merge_indexes'] = { '['+str(x[0])+','+str(x[1])+'[': ('['+str(exactdiffs[text][article]['merge_indexes'][x][0])+','+str(exactdiffs[text][article]['merge_indexes'][x][1])+'[' if exactdiffs[text][article]['merge_indexes'][x] else None) for x in exactdiffs[text][article]['merge_indexes'] }
 
