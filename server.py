@@ -171,9 +171,6 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             article = re.sub(' ', ' ', article) # U+00A0 → U+0020
             article = re.sub(r'( *»|« *)', '"', article)
 
-        # Hacky hack so that some amendments from the Sénat work for testing purposes
-        amendement = re.sub(r'remplacer les mots *:?\n([^\n]+)\npar les mots *:?\n([^\n]+)', r'les mots\n"\1"\n sont remplacés par les mots\n"\2"', amendement, flags=re.IGNORECASE)
-
         json_tree = ''
         diff = ''
         if self.path == '/rawtree':
