@@ -89,7 +89,10 @@ class CollectDiffsVisitor(duralex.AbstractVisitor):
         if law_name not in self.texts:
             self.texts[law_name] = {}
         self.diffs[law_name][article_id][node['uuid']] = node['diff']
-        self.exactdiffs[law_name][article_id][node['uuid']] = node['exactDiff']
+        exactdiff = node['exactDiff']
+        exactdiff = re.sub(r'^--- [^\n]+\n', '', exactdiff)
+        exactdiff = re.sub(r'^\+\+\+ [^\n]+\n', '', exactdiff)
+        self.exactdiffs[law_name][article_id][node['uuid']] = exactdiff
         self.texts[law_name][article_id] = node['text']
         self.current_article_id = None
         self.current_law_type = None
@@ -308,17 +311,11 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
     def renderExactDiff(self, exactdiffsArticle, editOperation):
 
-        type = 'modify'
         exactdiff = exactdiffsArticle[editOperation]
-        if exactdiff.startswith('--- /dev/null\n'):
-            type = 'add'
-        exactdiff = re.sub(r'^--- .*\n', '', exactdiff)
-        if exactdiff.startswith('\+\+\+ /dev/null\n'):
-            type = 'remove'
-        exactdiff = re.sub(r'^\+\+\+ .*\n', '', exactdiff)
         text = exactdiffsArticle['text']
 
         coords = None
+        type = None
         lines = re.split(r'(@@ -\d+,\d+ \+\d+,\d+ @@\n)', exactdiff)
         for line in lines:
             if not line:
@@ -327,16 +324,19 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                 s = re.match(r'@@ -(\d+),(\d+) \+(\d+),(\d+) @@\n', line)
                 if s != None:
                     if int(s.group(1)) > 0 and int(s.group(3)) > 0:
-                        if type != 'modify':
+                        if type != None and type != 'modify':
                             raise Exception('Contradictory diff: file header says it is added or removed but text header says it is modified')
+                        type = 'modify'
                         coords = (int(s.group(1))-1, int(s.group(2)), int(s.group(3))-1, int(s.group(4)))
                     elif int(s.group(1)) == 0 and int(s.group(4)) > 0:
-                        if type != 'add' or int(s.group(2)) != 0 or int(s.group(3)) != 1:
+                        if type != None or int(s.group(2)) != 0 or int(s.group(3)) != 1:
                             raise Exception('Contradictory diff: file header says it is modified or removed but text header says it is added')
+                        type = 'add'
                         coords = (0, 0, 0, int(s.group(4)))
                     elif int(s.group(2)) > 0 and int(s.group(3)) == 0:
-                        if type != 'remove' or int(s.group(1)) != 1 or int(s.group(4)) != 0:
+                        if type != None or int(s.group(1)) != 1 or int(s.group(4)) != 0:
                             raise Exception('Contradictory diff: file header says it is added or modified but text header says it is removed')
+                        type = 'remove'
                         coords = (0, int(s.group(2)), 0, 0)
                     else:
                         raise Exception('Empty diff, should not happen')
