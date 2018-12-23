@@ -325,18 +325,34 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                 continue
             if not coords:
                 s = re.match(r'@@ -(\d+),(\d+) \+(\d+),(\d+) @@\n', line)
-                coords = (int(s.group(1))-1, int(s.group(2)), int(s.group(3))-1, int(s.group(4)))
+                if s != None:
+                    if int(s.group(1)) > 0 and int(s.group(3)) > 0:
+                        if type != 'modify':
+                            raise Exception('Contradictory diff: file header says it is added or removed but text header says it is modified')
+                        coords = (int(s.group(1))-1, int(s.group(2)), int(s.group(3))-1, int(s.group(4)))
+                    elif int(s.group(1)) == 0 and int(s.group(4)) > 0:
+                        if type != 'add' or int(s.group(2)) != 0 or int(s.group(3)) != 1:
+                            raise Exception('Contradictory diff: file header says it is modified or removed but text header says it is added')
+                        coords = (0, 0, 0, int(s.group(4)))
+                    elif int(s.group(2)) > 0 and int(s.group(3)) == 0:
+                        if type != 'remove' or int(s.group(1)) != 1 or int(s.group(4)) != 0:
+                            raise Exception('Contradictory diff: file header says it is added or modified but text header says it is removed')
+                        coords = (0, int(s.group(2)), 0, 0)
+                    else:
+                        raise Exception('Empty diff, should not happen')
+                else:
+                    raise Exception('Unrecognised header in diff')
                 if coords[0] != coords[2]:
-                    raise NotImplementedError('It seems it happens: should be properly thought')
+                    raise Exception('A diff was seemingly not based on the original text')
             else:
                 del_chars = '\n'.join([s[1:] for s in line.splitlines() if s.startswith('-')])
                 ins_chars = '\n'.join([s[1:] for s in line.splitlines() if s.startswith('+')])
                 del_html = '\n'.join(['<del amendement="' + editOperation + '">' + s[1:] + '</del>' for s in line.splitlines() if s.startswith('-')])
                 ins_html = '\n'.join(['<ins amendement="' + editOperation + '">' + s[1:] + '</ins>' for s in line.splitlines() if s.startswith('+')])
                 if len(del_chars) != coords[1]:
-                    raise Exception('Not coherent')
+                    raise Exception('Not coherent (1)')
                 if len(ins_chars) != coords[3]:
-                    raise Exception('Not coherent')
+                    raise Exception('Not coherent (2)')
                 #print(coords)
                 #print(del_chars)
                 #print(ins_chars)
