@@ -148,10 +148,12 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         # Quick hack to be able to copy directly texts from the Assemblée’s website
         amendement = re.sub('’', "'", amendement)
         amendement = re.sub('‑', '-', amendement) # U+2011 → U+002D
+        amendement = re.sub(' ', ' ', amendement) # U+00A0 → U+0020
         amendement = re.sub(r'( *»|« *)', '"', amendement)
         if article:
             article = re.sub('’', "'", article)
             article = re.sub('‑', '-', article) # U+2011 → U+002D
+            article = re.sub(' ', ' ', article) # U+00A0 → U+0020
             article = re.sub(r'( *»|« *)', '"', article)
 
         # Hacky hack so that some amendments from the Sénat work for testing purposes
