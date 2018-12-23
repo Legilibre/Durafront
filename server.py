@@ -47,6 +47,11 @@ class CollectDiffsVisitor(duralex.AbstractVisitor):
             return
         self.current_article_id = node['id']
 
+    def visit_article_definition_node(self, node, post):
+        if not post or 'id' not in node:
+            return
+        self.current_article_id = node['id']
+
     def visit_law_reference_node(self, node, post):
         if not post or 'id' not in node or 'lawDate' not in node or 'lawType' not in node:
             return
@@ -222,7 +227,7 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             sedlex.AddDiffVisitor.AddDiffVisitor(article).visit(tree)
         except Exception as e:
             if len(e.args):
-                errors_diff = e.args[0]
+                errors_diff = e.args[0] + ' (1)'
             else:
                 errors_diff = True
 
@@ -245,7 +250,7 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             self.mergeExactDiffs(exactdiffs, texts)
         except Exception as e:
             if len(e.args):
-                exactdiffs['errors'] = e.args[0]
+                exactdiffs['errors'] = e.args[0] + ' (2)'
             else:
                 exactdiffs['errors'] = True
 
@@ -264,6 +269,8 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                 if 'type' not in exactdiffs[text][article]:
                     exactdiffs[text][article]['type'] = None
                 if 'merge_indexes' not in exactdiffs[text][article]:
+                    if exactdiffs[text][article]['text'] == None:
+                        exactdiffs[text][article]['text'] = ''
                     lentext = len(exactdiffs[text][article]['text'])
                     exactdiffs[text][article]['merge_indexes'] = { (0, lentext): (0, lentext), (lentext,lentext+1): (lentext, lentext+1) } if lentext else { (0, 1): (0, 1) }
                 for editOperation in exactdiffs[text][article]:
