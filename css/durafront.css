@@ -135,4 +135,7 @@ p {
 	background-color: hotpink;
 }
 
+#div-pjpl p.warning {
+	background-color: orange;
+}
 

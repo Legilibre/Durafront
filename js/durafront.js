@@ -41,8 +41,11 @@ $( function() {
 				if( data['errors'] ) {
 					t = '<p class="error">Erreur globale lors de la fusion' + (data['errors'] !== true ? ': ' + data['errors'] : '') + '</p>';
 				}
+				if( data['warnings'] ) {
+					t = '<p class="warning">Avertissement : ' + (data['warnings'] !== true ? data['warnings'] : 'problèmes détectés') + '</p>';
+				}
 				for( var text in data ) {
-					if( data['errors'] ) {
+					if( data['errors'] || text == 'warnings' ) {
 						continue;
 					}
 					tmp = '';

@@ -100,6 +100,21 @@ class CollectDiffsVisitor(duralex.AbstractVisitor):
         self.current_law_date = None
 
 
+class CheckRawContentVisitor(duralex.AbstractVisitor):
+
+    def __init__(self):
+        super(CheckRawContentVisitor, self).__init__()
+        self.visitors['raw-content'] = self.visit_raw_content_node
+        self.is_raw_content = False
+
+    def visit_raw_content_node(self, node, post):
+        self.is_raw_content = True
+
+    def visit(self, node):
+        super(CheckRawContentVisitor, self).visit(node)
+        return self.is_raw_content
+
+
 class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
     server_version = "DuraLexSedLexHTTP/0.1"
@@ -242,6 +257,7 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             data = { 'data': { 'errors': errors_diff }, 'duralex': tree }
             return json.dumps(data, sort_keys=True, indent=None, ensure_ascii=False, separators=(',', ':'))
 
+        # Collect unitary diffs
         diffsvisitor = CollectDiffsVisitor()
         diffsvisitor.visit(tree)
         diffs = diffsvisitor.diffs
@@ -249,8 +265,7 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         texts = diffsvisitor.texts
         exactdiffs_json = json.dumps(exactdiffs, sort_keys=True, indent=2, ensure_ascii=False)
 
-        #return json_tree + exactdiffs_json
-
+        # Merge unitary diffs
         try:
             self.mergeExactDiffs(exactdiffs, texts)
         except Exception as e:
@@ -259,7 +274,8 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             else:
                 exactdiffs['errors'] = True
 
-        #print(exactdiffs)
+        if CheckRawContentVisitor().visit(tree):
+            exactdiffs['warnings'] = 'incomplete parsing: could be inaccurate'
 
         data = { 'data': exactdiffs, 'duralex': tree }
 
@@ -279,7 +295,7 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                     lentext = len(exactdiffs[text][article]['text'])
                     exactdiffs[text][article]['merge_indexes'] = { (0, lentext): (0, lentext), (lentext,lentext+1): (lentext, lentext+1) } if lentext else { (0, 1): (0, 1) }
                 for editOperation in exactdiffs[text][article]:
-                    if editOperation == 'merge_indexes' or editOperation == 'text' or editOperation == 'type' or editOperation == 'errors':
+                    if editOperation in ['merge_indexes', 'text', 'type', 'errors', 'warnings']:
                         continue
                     try:
                         exactdiffs[text][article] = self.renderExactDiff(exactdiffs[text][article], editOperation)
