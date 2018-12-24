@@ -178,7 +178,15 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         elif self.path == '/tree':
             json_tree = self.handle_tree(amendement)
         elif self.path == '/diff':
-            json_tree = self.handle_diff(amendement, article)
+            try:
+                json_tree = self.handle_diff(amendement, article)
+            except Exception as e:
+                if len(e.args):
+                    errors_diff = e.args[0] + ' (0)'
+                    data = { 'data': { 'errors': errors_diff }, 'duralex': {} }
+                else:
+                    data = { 'data': { 'errors': 'general' }, 'duralex': {} }
+                json_tree = json.dumps(data, sort_keys=True, indent=None, ensure_ascii=False, separators=(',', ':'))
 
         if json_tree:
             self.send_response(200)
