@@ -10,6 +10,7 @@ import http.server
 import sys
 import json
 import re
+import logging
 
 sys.path.insert(0, "/opt/SedLex")
 sys.path.insert(0, "/opt/DuraLex")
@@ -29,6 +30,9 @@ import duralex.DeleteParentVisitor
 import duralex.DeleteEmptyChildrenVisitor
 import sedlex.AddArcheoLexFilenameVisitor
 import sedlex.AddDiffVisitor
+
+#LOGGER = logging.getLogger('main')
+#logging.basicConfig(level='DEBUG', format='%(asctime)s - %(levelname)s - %(name)s - %(message)s')
 
 class CollectDiffsVisitor(duralex.AbstractVisitor):
 
@@ -231,7 +235,53 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
         return json_tree
 
-    def handle_diff(self, text, article=None):
+    def handle_diff(self, amendment, article=None):
+
+        if article == None:
+            json_tree = self.getDiffLevel(0, amendment, article)
+        else:
+            new_amendment = self.getDiffLevel(0, amendment, article)
+            if not new_amendment \
+              or 'errors' in new_amendment['data'] \
+              or 'warnings' in new_amendment['data'] \
+              or 'data' not in new_amendment \
+              or 'anonymous law' not in new_amendment['data'] \
+              or 'anonymous article' not in new_amendment['data']['anonymous law'] \
+              or 'text' not in new_amendment['data']['anonymous law']['anonymous article'] \
+              or not new_amendment['data']['anonymous law']['anonymous article']['text']:
+                return new_amendment
+
+            ppjl_article = new_amendment['data']['anonymous law']['anonymous article']['text']
+            current_ppjl_article = re.sub(r'<ins amendement="[0-9a-f-]+">[^<]*.*?<\/ins>', '', ppjl_article)
+            current_ppjl_article = re.sub(r'<del amendement="[0-9a-f-]+">([^<]*.*?)<\/del>', r'\1', current_ppjl_article)
+            amended_ppjl_article = re.sub(r'<del amendement="[0-9a-f-]+">[^<]*.*?<\/del>', '', ppjl_article)
+            amended_ppjl_article = re.sub(r'<ins amendement="[0-9a-f-]+">([^<]*.*?)<\/ins>', r'\1', amended_ppjl_article)
+            ppjl_modified_law = self.getDiffLevel(1, current_ppjl_article, None)
+            amended_ppjl_modified_law = self.getDiffLevel(1, amended_ppjl_article, None)
+            data = new_amendment
+            data['levels'] = []
+            data['levels'].append([])
+            data['levels'][0].append(ppjl_modified_law)
+            data['levels'][0].append(amended_ppjl_modified_law)
+
+        json_tree = json.dumps(data, sort_keys=True, indent=None, ensure_ascii=False, separators=(',', ':'))
+        return json_tree
+
+    def getDiffLevel(self, level, amendment, article):
+
+        try:
+            json_tree = self.getDiff(amendment, article)
+        except Exception as e:
+            if len(e.args):
+                errors_diff = e.args[0] + ' (0)'
+                data = { 'data': { 'errors': errors_diff }, 'duralex': {} }
+            else:
+                data = { 'data': { 'errors': 'general' }, 'duralex': {} }
+            json_tree = data
+
+        return json_tree
+
+    def getDiff(self, text, article=None):
 
         errors_diff = False
         try:
@@ -284,7 +334,7 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
         data = { 'data': exactdiffs, 'duralex': tree }
 
-        return json.dumps(data, sort_keys=True, indent=None, ensure_ascii=False, separators=(',', ':'))
+        return data
 
     def mergeExactDiffs(self, exactdiffs, texts):
 
