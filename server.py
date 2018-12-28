@@ -263,6 +263,7 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             data['levels'].append([])
             data['levels'][0].append(ppjl_modified_law)
             data['levels'][0].append(amended_ppjl_modified_law)
+            json_tree = data
 
         return json_tree
 

@@ -56,7 +56,7 @@ $( function() {
 					t = '<p class="warning">Avertissement : ' + (data['warnings'] !== true ? data['warnings'] : 'problèmes détectés') + '</p>';
 				}
 				for( var text in data ) {
-					if( data['errors'] || text == 'warnings' || text == 'levels' ) {
+					if( data['errors'] || text == 'warnings' || text == 'levels' || text == 'backtrace' ) {
 						continue;
 					}
 					tmp = '';
@@ -83,15 +83,15 @@ $( function() {
 					}
 				}
 				if( e.levels && e.levels[0] ) {
-					console.log(e);
 					diffs.vigueur = [ [] ];
 					t += '<div class="interlude">Qui devient sur la loi en vigueur…</div>';
 					for( var i in e.levels[0] ) {
 						tmp = '';
-						console.log(i);
 						diffs.vigueur[0][i] = {};
 						for( var text in e.levels[0][i].data ) {
-							console.log(text);
+							if( e.levels[0][i].data['errors'] || text == 'warnings' || text == 'backtrace' ) {
+								continue;
+							}
 							diffs.vigueur[0][i][text] = {};
 							var text_fr;
 							if( text.substr(0, 5) == 'code ' ) {
@@ -103,7 +103,6 @@ $( function() {
 								text_fr = r[1].substr(0, 1).toUpperCase() + r[1].substr(1) + 'n°&nbsp;' + r[5] + ' du ' + ( r[4] === '1' ? '1er' : r[4] ) + ' ' + mois[r[3]] + ' ' + r[2];
 							}
 							for( var article in e.levels[0][i].data[text] ) {
-								console.log(article);
 								diffs.vigueur[0][i][text][article] = e['levels'][0][i]['data'][text][article]['text'];
 								var article_fr = article == 'anonymous article' ? '(article non-spécifié)' : article;
 								article_fr += i == 0 ? '&nbsp;<small>(si la proposition/projet de loi est adopté/e)</small>' : '&nbsp;<small>(si la proposition/projet de loi et l’amendement sont adoptés)</small>';
@@ -115,6 +114,9 @@ $( function() {
 					tmp = '';
 					for( var text in diffs.vigueur[0][0] ) {
 						var text_fr;
+						if( diffs.vigueur[0][0]['errors'] || text == 'warnings' || text == 'backtrace' ) {
+							continue;
+						}
 						if( text.substr(0, 5) == 'code ' ) {
 							text_fr = text.substr(5, 1).toUpperCase() + text.substr(6);
 						} else if( text == 'anonymous law' ) {
