@@ -532,6 +532,12 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
         return exactdiffsArticle
 
+    def printTree(self, tree):
+
+        tree2 = duralex.tree.copy_node(tree, True, False)
+        duralex.DeleteParentVisitor().visit(tree2)
+        print(json.dumps(tree2, sort_keys=True, indent=2, ensure_ascii=False))
+
 
 if __name__ == "__main__":
 
