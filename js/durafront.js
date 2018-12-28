@@ -134,7 +134,7 @@ $( function() {
 				}
 				duralex = e.duralex;
 				delete e.duralex;
-				t += '<div class="texte"><h1>#&nbsp;Résultats intermédiaires</h1><h2>Fusion des diffs</h2><pre>' + JSON.stringify(data, null, 2).trim().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g, '<br />') + '</pre><h2>Arbre DuraLex+SedLex</h2><pre>' + JSON.stringify(duralex, null, 2).trim().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g, '<br />') + '</pre></div>';
+				t += '<div class="texte"><h1>#&nbsp;Résultats intermédiaires</h1>' + ( data['backtrace'] ? '<h2>Backtrace de l’erreur</h2><pre>' + data['backtrace'].trim().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g, '<br />')+'</pre>' : '' ) + '<h2>Fusion des diffs</h2><pre>' + JSON.stringify(data, null, 2).trim().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g, '<br />') + '</pre><h2>Arbre DuraLex+SedLex</h2><pre>' + JSON.stringify(duralex, null, 2).trim().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g, '<br />') + '</pre></div>';
 				$('#div-pjpl').html( t );
 			}
 		});
@@ -231,6 +231,17 @@ function thirdDiff(diff1, diff2) {
 			i2 += 1;
 			counter += -1;
 		}
+/*
+AA'  AB' A'B' Implémenté
+C    C   C    *
+R    C   A    *
+A    -   R    
+C    R   R    *
+R    R   -    
+-    A   A    
+A == A   C    *
+A != A   RA   *
+*/
 	}
 	return thirdDiff;
 }

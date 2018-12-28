@@ -11,6 +11,7 @@ import sys
 import json
 import re
 import logging
+import traceback
 
 sys.path.insert(0, "/opt/SedLex")
 sys.path.insert(0, "/opt/DuraLex")
@@ -185,12 +186,11 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             try:
                 json_tree = self.handle_diff(amendement, article)
             except Exception as e:
-                if len(e.args):
-                    errors_diff = e.args[0] + ' (0)'
-                    data = { 'data': { 'errors': errors_diff }, 'duralex': {} }
+                if str(e):
+                    json_tree = { 'data': { 'errors': str(e) + ' (do_POST)', 'backtrace': traceback.format_exc() }, 'duralex': {} }
                 else:
-                    data = { 'data': { 'errors': 'general' }, 'duralex': {} }
-                json_tree = json.dumps(data, sort_keys=True, indent=None, ensure_ascii=False, separators=(',', ':'))
+                    json_tree = { 'data': { 'errors': 'general (do_POST)', 'backtrace': traceback.format_exc() }, 'duralex': {} }
+            json_tree = json.dumps(json_tree, sort_keys=True, indent=None, ensure_ascii=False, separators=(',', ':'))
 
         if json_tree:
             self.send_response(200)
@@ -264,7 +264,6 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             data['levels'][0].append(ppjl_modified_law)
             data['levels'][0].append(amended_ppjl_modified_law)
 
-        json_tree = json.dumps(data, sort_keys=True, indent=None, ensure_ascii=False, separators=(',', ':'))
         return json_tree
 
     def getDiffLevel(self, level, amendment, article):
@@ -272,11 +271,10 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         try:
             json_tree = self.getDiff(amendment, article)
         except Exception as e:
-            if len(e.args):
-                errors_diff = e.args[0] + ' (0)'
-                data = { 'data': { 'errors': errors_diff }, 'duralex': {} }
+            if str(e):
+                data = { 'data': { 'errors': str(e) + ' (getDiffLevel)', 'backtrace': traceback.format_exc() }, 'duralex': {} }
             else:
-                data = { 'data': { 'errors': 'general' }, 'duralex': {} }
+                data = { 'data': { 'errors': 'general (getDiffLevel)', 'backtrace': traceback.format_exc() }, 'duralex': {} }
             json_tree = data
 
         return json_tree
@@ -301,16 +299,18 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             sedlex.AddArcheoLexFilenameVisitor.AddArcheoLexFilenameVisitor("/opt/Archeo-Lex/textes/articles/codes").visit(tree)
             sedlex.AddDiffVisitor.AddDiffVisitor(article).visit(tree)
         except Exception as e:
-            if len(e.args):
-                errors_diff = e.args[0] + ' (1)'
+            if str(e):
+                errors_diff = str(e) + ' (getDiff, 1)'
+                backtrace_diff = traceback.format_exc()
             else:
-                errors_diff = True
+                errors_diff = 'general (getDiff, 1)'
+                backtrace_diff = traceback.format_exc()
 
         duralex.DeleteParentVisitor().visit(tree)
 
         if errors_diff:
-            data = { 'data': { 'errors': errors_diff }, 'duralex': tree }
-            return json.dumps(data, sort_keys=True, indent=None, ensure_ascii=False, separators=(',', ':'))
+            data = { 'data': { 'errors': errors_diff, 'backtrace': backtrace_diff }, 'duralex': tree }
+            return data
 
         # Collect unitary diffs
         diffsvisitor = CollectDiffsVisitor()
@@ -324,10 +324,12 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         try:
             self.mergeExactDiffs(exactdiffs, texts)
         except Exception as e:
-            if len(e.args):
-                exactdiffs['errors'] = e.args[0] + ' (2)'
+            if str(e):
+                exactdiffs['errors'] = str(e) + ' (getDiff, 2)'
+                exactdiffs['backtrace'] = traceback.format_exc()
             else:
-                exactdiffs['errors'] = True
+                exactdiffs['errors'] = 'general (getDiff, 2)'
+                exactdiffs['backtrace'] = traceback.format_exc()
 
         if CheckRawContentVisitor().visit(tree):
             exactdiffs['warnings'] = 'incomplete parsing: could be inaccurate'
@@ -355,10 +357,12 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                     try:
                         exactdiffs[text][article] = self.renderExactDiff(exactdiffs[text][article], editOperation)
                     except Exception as e:
-                        if len(e.args):
-                            exactdiffs[text][article]['errors'] = e.args[0]
+                        if str(e):
+                            exactdiffs[text][article]['errors'] = str(e) + ' (mergeExactDiffs)'
+                            exactdiffs[text][article]['backtrace'] = traceback.format_exc()
                         else:
-                            exactdiffs[text][article]['errors'] = True
+                            exactdiffs[text][article]['errors'] = 'general (mergeExactDiffs)'
+                            exactdiffs[text][article]['backtrace'] = traceback.format_exc()
                         break
 
                 tag_split = [x for x in re.split('(<(?:del|ins) amendement="[a-z0-9-]+">.*?<\/(?:del|ins)>)', exactdiffs[text][article]['text']) if x]
