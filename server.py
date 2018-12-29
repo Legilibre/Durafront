@@ -292,6 +292,7 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             bill_article = duralex.tree.create_node(bill, {'type': duralex.tree.TYPE_BILL_ARTICLE_REFERENCE, 'order': 0, 'content': article})
 
             duralex.alinea_parser.parse_alineas(text, tree)
+            #self.printTree(tree)
             duralex.ResolveLookbackReferencesVisitor().visit(tree)
             duralex.ForkReferenceVisitor().visit(tree)
             duralex.ResolveFullyQualifiedDefinitionsVisitor().visit(tree)
@@ -539,9 +540,7 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
     def printTree(self, tree):
 
-        tree2 = duralex.tree.copy_node(tree, True, False)
-        duralex.DeleteParentVisitor().visit(tree2)
-        print(json.dumps(tree2, sort_keys=True, indent=2, ensure_ascii=False))
+        print(duralex.tree.node_to_string(tree, True))
 
 
 if __name__ == "__main__":
