@@ -287,7 +287,9 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
         errors_diff = False
         try:
-            tree = duralex.tree.create_node(None, {'content': text})
+            tree = duralex.tree.create_node(None, {'type': duralex.tree.TYPE_AMENDMENT, 'content': text})
+            bill = duralex.tree.create_node(tree, {'type': duralex.tree.TYPE_LAW_PROJECT})
+            bill_article = duralex.tree.create_node(bill, {'type': duralex.tree.TYPE_BILL_ARTICLE_REFERENCE, 'order': 0, 'content': article})
 
             duralex.alinea_parser.parse_alineas(text, tree)
             duralex.ResolveLookbackReferencesVisitor().visit(tree)
