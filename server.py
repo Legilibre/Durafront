@@ -145,12 +145,14 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             data = json.loads(data)
             amendement = data['texteAmendement'] if 'texteAmendement' in data else None
             article = data['texteArticle'] if 'texteArticle' in data else None
+            calculeVigueur = True if 'calculeVigueur' in data and data['calculeVigueur'] else False
             numeroTexte = data['numeroTexte'] if 'numeroTexte' in data else None
             numeroArticle = data['numeroArticle'] if 'numeroArticle' in data else None
             numeroAmendement = data['numeroAmendement'] if 'numeroAmendement' in data else None
         except:
             amendment = data
             article = None
+            calculeVigueur = False
             numeroTexte = None
             numeroArticle = None
             numeroAmendement = None
@@ -184,7 +186,7 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             json_tree = self.handle_tree(amendement)
         elif self.path == '/diff':
             try:
-                json_tree = self.handle_diff(amendement, article)
+                json_tree = self.handle_diff(amendement, article, calculeVigueur)
             except Exception as e:
                 if str(e):
                     json_tree = { 'data': { 'errors': str(e) + ' (do_POST)', 'backtrace': traceback.format_exc() }, 'duralex': {} }
@@ -235,13 +237,14 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
         return json_tree
 
-    def handle_diff(self, amendment, article=None):
+    def handle_diff(self, amendment, article=None, calculeVigueur=False):
 
         if article == None:
             json_tree = self.getDiffLevel(0, amendment, article)
         else:
             new_amendment = self.getDiffLevel(0, amendment, article)
-            if not new_amendment \
+            if not calculeVigueur \
+              or not new_amendment \
               or 'errors' in new_amendment['data'] \
               or 'warnings' in new_amendment['data'] \
               or 'data' not in new_amendment \
