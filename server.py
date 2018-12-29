@@ -141,21 +141,25 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             self.send_error(400)
             return
 
+        article = None
+        amendement = None
+        calculeVigueur = False
+        numeroTexte = None
+        numeroArticle = None
+        numeroAmendement = None
+
         try:
             data = json.loads(data)
-            amendement = data['texteAmendement'] if 'texteAmendement' in data else None
-            article = data['texteArticle'] if 'texteArticle' in data else None
+        except:
+            article = data
+
+        if type(data) != str:
+            article = data['texteArticle'] if 'texteArticle' in data and data['texteArticle'] and data['texteArticle'].strip() else None
+            amendement = data['texteAmendement'] if 'texteAmendement' in data and data['texteAmendement'] and data['texteAmendement'].strip() else None
             calculeVigueur = True if 'calculeVigueur' in data and data['calculeVigueur'] else False
             numeroTexte = data['numeroTexte'] if 'numeroTexte' in data else None
             numeroArticle = data['numeroArticle'] if 'numeroArticle' in data else None
             numeroAmendement = data['numeroAmendement'] if 'numeroAmendement' in data else None
-        except:
-            amendment = data
-            article = None
-            calculeVigueur = False
-            numeroTexte = None
-            numeroArticle = None
-            numeroAmendement = None
 
         if False and amendement and numeroArticle and numeroTexte: # 
             article = getArticleFromTricoteuses(numeroTexte, numeroArticle)
@@ -163,20 +167,21 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             uid = 'AMANR5L15' + 'SEA717460' + 'B' + numeroTexte + 'P0D1N' + numeroAmendement
             amendement, numeroArticle = getAmendmentFromTricoteuses(numeroTexte, numeroAmendement)
             article = getArticleFromTricoteuses(numeroTexte, numeroArticle)
-        elif not amendement:
+        elif not article and not amendement:
             self.send_error(400)
             return
 
         # Quick hack to be able to copy directly texts from the Assemblée’s website
-        amendement = re.sub('’', "'", amendement)
-        amendement = re.sub('‑', '-', amendement) # U+2011 → U+002D
-        amendement = re.sub(' ', ' ', amendement) # U+00A0 → U+0020
-        amendement = re.sub(r'( *»|« *)', '"', amendement)
         if article:
             article = re.sub('’', "'", article)
             article = re.sub('‑', '-', article) # U+2011 → U+002D
             article = re.sub(' ', ' ', article) # U+00A0 → U+0020
             article = re.sub(r'( *»|« *)', '"', article)
+        if amendement:
+            amendement = re.sub('’', "'", amendement)
+            amendement = re.sub('‑', '-', amendement) # U+2011 → U+002D
+            amendement = re.sub(' ', ' ', amendement) # U+00A0 → U+0020
+            amendement = re.sub(r'( *»|« *)', '"', amendement)
 
         json_tree = ''
         diff = ''
@@ -186,7 +191,7 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             json_tree = self.handle_tree(amendement)
         elif self.path == '/diff':
             try:
-                json_tree = self.handle_diff(amendement, article, calculeVigueur)
+                json_tree = self.handle_diff(article, amendement, calculeVigueur)
             except Exception as e:
                 if str(e):
                     json_tree = { 'data': { 'errors': str(e) + ' (do_POST)', 'backtrace': traceback.format_exc() }, 'duralex': {} }
@@ -237,43 +242,40 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
         return json_tree
 
-    def handle_diff(self, amendment, article=None, calculeVigueur=False):
+    def handle_diff(self, article, amendment=None, calculeVigueur=False):
 
-        if article == None:
-            json_tree = self.getDiffLevel(0, amendment, article)
-        else:
-            new_amendment = self.getDiffLevel(0, amendment, article)
-            if not calculeVigueur \
-              or not new_amendment \
-              or 'errors' in new_amendment['data'] \
-              or 'warnings' in new_amendment['data'] \
-              or 'data' not in new_amendment \
-              or 'anonymous law' not in new_amendment['data'] \
-              or 'anonymous article' not in new_amendment['data']['anonymous law'] \
-              or 'text' not in new_amendment['data']['anonymous law']['anonymous article'] \
-              or not new_amendment['data']['anonymous law']['anonymous article']['text']:
-                return new_amendment
+        new_amendment = self.getDiffLevel(0, article, amendment)
+        if not amendment \
+          or not calculeVigueur \
+          or not new_amendment \
+          or 'errors' in new_amendment['data'] \
+          or 'warnings' in new_amendment['data'] \
+          or 'data' not in new_amendment \
+          or 'anonymous law' not in new_amendment['data'] \
+          or 'anonymous article' not in new_amendment['data']['anonymous law'] \
+          or 'text' not in new_amendment['data']['anonymous law']['anonymous article'] \
+          or not new_amendment['data']['anonymous law']['anonymous article']['text']:
+            return new_amendment
 
-            ppjl_article = new_amendment['data']['anonymous law']['anonymous article']['text']
-            current_ppjl_article = re.sub(r'<ins amendement="[0-9a-f-]+">[^<]*.*?<\/ins>', '', ppjl_article)
-            current_ppjl_article = re.sub(r'<del amendement="[0-9a-f-]+">([^<]*.*?)<\/del>', r'\1', current_ppjl_article)
-            amended_ppjl_article = re.sub(r'<del amendement="[0-9a-f-]+">[^<]*.*?<\/del>', '', ppjl_article)
-            amended_ppjl_article = re.sub(r'<ins amendement="[0-9a-f-]+">([^<]*.*?)<\/ins>', r'\1', amended_ppjl_article)
-            ppjl_modified_law = self.getDiffLevel(1, current_ppjl_article, None)
-            amended_ppjl_modified_law = self.getDiffLevel(1, amended_ppjl_article, None)
-            data = new_amendment
-            data['levels'] = []
-            data['levels'].append([])
-            data['levels'][0].append(ppjl_modified_law)
-            data['levels'][0].append(amended_ppjl_modified_law)
-            json_tree = data
+        ppjl_article = new_amendment['data']['anonymous law']['anonymous article']['text']
+        current_ppjl_article = re.sub(r'<ins amendement="[0-9a-f-]+">[^<]*.*?<\/ins>', '', ppjl_article)
+        current_ppjl_article = re.sub(r'<del amendement="[0-9a-f-]+">([^<]*.*?)<\/del>', r'\1', current_ppjl_article)
+        amended_ppjl_article = re.sub(r'<del amendement="[0-9a-f-]+">[^<]*.*?<\/del>', '', ppjl_article)
+        amended_ppjl_article = re.sub(r'<ins amendement="[0-9a-f-]+">([^<]*.*?)<\/ins>', r'\1', amended_ppjl_article)
+        ppjl_modified_law = self.getDiffLevel(1, current_ppjl_article, None)
+        amended_ppjl_modified_law = self.getDiffLevel(1, amended_ppjl_article, None)
+        data = new_amendment
+        data['levels'] = []
+        data['levels'].append([])
+        data['levels'][0].append(ppjl_modified_law)
+        data['levels'][0].append(amended_ppjl_modified_law)
 
-        return json_tree
+        return data
 
-    def getDiffLevel(self, level, amendment, article):
+    def getDiffLevel(self, level, article, amendment):
 
         try:
-            json_tree = self.getDiff(amendment, article)
+            json_tree = self.getDiff(article, amendment)
         except Exception as e:
             if str(e):
                 data = { 'data': { 'errors': str(e) + ' (getDiffLevel)', 'backtrace': traceback.format_exc() }, 'duralex': {} }
@@ -283,13 +285,21 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
         return json_tree
 
-    def getDiff(self, text, article=None):
+    def getDiff(self, article=None, amendement=None):
 
         errors_diff = False
         try:
-            tree = duralex.tree.create_node(None, {'type': duralex.tree.TYPE_AMENDMENT, 'content': text})
-            bill = duralex.tree.create_node(tree, {'type': duralex.tree.TYPE_LAW_PROJECT})
-            bill_article = duralex.tree.create_node(bill, {'type': duralex.tree.TYPE_BILL_ARTICLE_REFERENCE, 'order': 0, 'content': article})
+            text = None
+            bill = duralex.tree.create_node(None, {'type': duralex.tree.TYPE_LAW_PROPOSAL})
+            tree = bill
+            if article:
+                tree = duralex.tree.create_node(tree, {'type': duralex.tree.TYPE_BILL_ARTICLE, 'content': article, 'order': 0})
+                text = article
+            if amendement:
+                tree = duralex.tree.create_node(tree, {'type': duralex.tree.TYPE_AMENDMENT, 'content': amendement})
+                text = amendement
+            if text == None:
+                raise ValueError
 
             duralex.alinea_parser.parse_alineas(text, tree)
             #self.printTree(tree)
@@ -301,10 +311,10 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             duralex.SortReferencesVisitor().visit(tree)
             duralex.SwapDefinitionAndReferenceVisitor().visit(tree)
             duralex.RemoveQuotePrefixVisitor().visit(tree)
-            duralex.DeleteEmptyChildrenVisitor().visit(tree)
+            duralex.DeleteEmptyChildrenVisitor().visit(bill)
 
-            sedlex.AddArcheoLexFilenameVisitor.AddArcheoLexFilenameVisitor("/opt/Archeo-Lex/textes/articles/codes").visit(tree)
-            sedlex.AddDiffVisitor.AddDiffVisitor(article).visit(tree)
+            sedlex.AddArcheoLexFilenameVisitor.AddArcheoLexFilenameVisitor("/opt/Archeo-Lex/textes/articles/codes").visit(bill)
+            sedlex.AddDiffVisitor.AddDiffVisitor().visit(bill)
         except Exception as e:
             if str(e):
                 errors_diff = str(e) + ' (getDiff, 1)'
@@ -313,15 +323,15 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                 errors_diff = 'general (getDiff, 1)'
                 backtrace_diff = traceback.format_exc()
 
-        duralex.DeleteParentVisitor().visit(tree)
+        duralex.DeleteParentVisitor().visit(bill)
 
         if errors_diff:
-            data = { 'data': { 'errors': errors_diff, 'backtrace': backtrace_diff }, 'duralex': tree }
+            data = { 'data': { 'errors': errors_diff, 'backtrace': backtrace_diff }, 'duralex': bill }
             return data
 
         # Collect unitary diffs
         diffsvisitor = CollectDiffsVisitor()
-        diffsvisitor.visit(tree)
+        diffsvisitor.visit(bill)
         diffs = diffsvisitor.diffs
         exactdiffs = diffsvisitor.exactdiffs
         texts = diffsvisitor.texts
@@ -338,10 +348,10 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                 exactdiffs['errors'] = 'general (getDiff, 2)'
                 exactdiffs['backtrace'] = traceback.format_exc()
 
-        if CheckRawContentVisitor().visit(tree):
+        if CheckRawContentVisitor().visit(bill):
             exactdiffs['warnings'] = 'incomplete parsing: could be inaccurate'
 
-        data = { 'data': exactdiffs, 'duralex': tree }
+        data = { 'data': exactdiffs, 'duralex': bill }
 
         return data
 

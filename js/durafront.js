@@ -37,7 +37,13 @@ $( function() {
 			'timeout': 120 * 1000,
 			'dataType': 'json',
 			'error': function(e) {
-				$('#div-pjpl').html( '<p class="error">Pas de réponse du serveur. Contactez seb35' + '@' + 'seb35.fr ou sur Twitter @sseb35.</p>' );
+				if( e.status === 400 ) {
+					$('#div-pjpl').html( '<p class="error">Mauvaise entrée, avez-vous bien entré un texte ?</p>' );
+				} else if( e.status === 500 ) {
+					$('#div-pjpl').html( '<p class="error">Erreur interne du serveur. Contactez seb35' + '@' + 'seb35.fr ou sur Twitter @sseb35.</p>' );
+				} else {
+					$('#div-pjpl').html( '<p class="error">Pas de réponse du serveur. Contactez seb35' + '@' + 'seb35.fr ou sur Twitter @sseb35.</p>' );
+				}
 			},
 			'success': function(e) {
 
