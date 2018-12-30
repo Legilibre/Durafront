@@ -28,13 +28,12 @@ Sur DuraLex :
 
 * pas de compréhension des listes d’articles, par exemple « les articles 31 et 32 sont ainsi modifié »
 
-Sur SedLex :
+Déploiement
+-----------
 
-* Certains paragraphes sont insérés au début alors qu’ils devraient être plus loin
+Il y a le fichier de configuration du service systemd dans le dossier `/docs`, celui-ci doit être placé dans `/usr/local/lib/systemd/system` et bien sûr le chemin de server.py peut être ajusté.
 
-Sur Durafront :
-
-* Peu de textes en vigueur sont disponibles dans le déploiement expériemental
+Pour le développement, il est possible de lancer le serveur via le script `scripts/autorestart`. Celui-ci permet de redémarrer le serveur Durafront dès qu’un des fichiers de Durafront, DuraLex ou SedLex change. Il faut créer les liens symboliques `/opt/DuraLex` et `/opt/SedLex` vers les destinations correctes.
 
 License
 -------

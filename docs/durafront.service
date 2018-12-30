@@ -1,0 +1,9 @@
+[Unit]
+Description=Durafront
+
+[Service]
+Restart=always
+ExecStart=/usr/bin/python3 /opt/durafront/server.py
+
+[Install]
+WantedBy=multi-user.target
