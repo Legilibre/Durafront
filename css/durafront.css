@@ -32,6 +32,7 @@ body {
 	left: calc( 50% + 2px );
 	width: calc( 50% - 8px );
 	overflow-y: scroll;
+	white-space: pre-wrap;
 }
 
 #select, #t {
@@ -120,14 +121,13 @@ p {
 	text-decoration: none;
 }
 
-#div-pjpl del, #div-pjpl ins {
-	white-space: pre-wrap;
+#div-pjpl del + ins, #div-pjpl ins + del {
 	padding-left: 0.1em;
 	padding-right: 0.1em;
 	margin-left: 1px;
 }
 
-#div-pjpl div.texte pre {
+#div-pjpl pre {
 	white-space: pre-wrap;
 }
 
