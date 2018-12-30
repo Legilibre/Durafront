@@ -311,7 +311,6 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             duralex.SortReferencesVisitor().visit(tree)
             duralex.SwapDefinitionAndReferenceVisitor().visit(tree)
             duralex.RemoveQuotePrefixVisitor().visit(tree)
-            duralex.DeleteEmptyChildrenVisitor().visit(bill)
 
             sedlex.AddArcheoLexFilenameVisitor.AddArcheoLexFilenameVisitor("/opt/Archeo-Lex/textes/articles/codes", '/opt/Archeo-Lex/textes/codes').visit(bill)
             sedlex.AddDiffVisitor.AddDiffVisitor().visit(bill)
@@ -323,6 +322,7 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                 errors_diff = 'general (getDiff, 1)'
                 backtrace_diff = traceback.format_exc()
 
+        duralex.DeleteEmptyChildrenVisitor().visit(bill)
         duralex.DeleteParentVisitor().visit(bill)
 
         if errors_diff:
