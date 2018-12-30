@@ -313,7 +313,7 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             duralex.RemoveQuotePrefixVisitor().visit(tree)
             duralex.DeleteEmptyChildrenVisitor().visit(bill)
 
-            sedlex.AddArcheoLexFilenameVisitor.AddArcheoLexFilenameVisitor("/opt/Archeo-Lex/textes/articles/codes").visit(bill)
+            sedlex.AddArcheoLexFilenameVisitor.AddArcheoLexFilenameVisitor("/opt/Archeo-Lex/textes/articles/codes", '/opt/Archeo-Lex/textes/codes').visit(bill)
             sedlex.AddDiffVisitor.AddDiffVisitor().visit(bill)
         except Exception as e:
             if str(e):
