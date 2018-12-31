@@ -72,7 +72,7 @@ class CollectDiffsVisitor(duralex.AbstractVisitor):
         self.current_law_date = None
 
     def visit_edit_node(self, node, post):
-        if not post or 'diff' not in node or 'exactDiff' not in node:
+        if not post or ('diff' not in node and 'exactDiff' not in node):
             return
         if self.current_law_type == 'code':
             law_name = self.current_law_type + ' ' + self.current_law_id
@@ -93,10 +93,12 @@ class CollectDiffsVisitor(duralex.AbstractVisitor):
             self.exactdiffs[law_name][article_id] = {}
         if law_name not in self.texts:
             self.texts[law_name] = {}
-        self.diffs[law_name][article_id][node['uuid']] = node['diff']
-        exactdiff = node['exactDiff']
-        exactdiff = re.sub(r'^--- [^\n]+\n', '', exactdiff)
-        exactdiff = re.sub(r'^\+\+\+ [^\n]+\n', '', exactdiff)
+        if 'diff' in node:
+            self.diffs[law_name][article_id][node['uuid']] = node['diff']
+        if 'exactDiff' in node:
+            exactdiff = node['exactDiff']
+            exactdiff = re.sub(r'^--- [^\n]+\n', '', exactdiff)
+            exactdiff = re.sub(r'^\+\+\+ [^\n]+\n', '', exactdiff)
         self.exactdiffs[law_name][article_id][node['uuid']] = exactdiff
         self.texts[law_name][article_id] = node['text']
         self.current_article_id = None
@@ -313,7 +315,7 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             duralex.RemoveQuotePrefixVisitor().visit(tree)
 
             sedlex.AddArcheoLexFilenameVisitor.AddArcheoLexFilenameVisitor("/opt/Archeo-Lex/textes/articles/codes", '/opt/Archeo-Lex/textes/codes').visit(bill)
-            sedlex.AddDiffVisitor.AddDiffVisitor().visit(bill)
+            sedlex.AddDiffVisitor.AddDiffVisitor(False, True).visit(bill)
         except Exception as e:
             if str(e):
                 errors_diff = str(e) + ' (getDiff, 1)'
