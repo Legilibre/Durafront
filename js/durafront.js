@@ -21,7 +21,7 @@ $( function() {
 	console.log(new Date().getDate());
 	var date = new Date();
 	if( date.getMonth() == 0 && date.getDate() < 10 ) {
-		$('#amendement').val('I. - Au premier alinéa, remplacer le mot « ' + (date.getFullYear()-1) + ' » par « ' + date.getFullYear() + ' ».\n\nII. - ' + $('#amendement').val().replace('premier', 'troisième'));
+		$('#amendement').val('I. - Au premier alinéa, remplacer le mot « ' + (date.getFullYear()-1) + ' » par le mot « ' + date.getFullYear() + ' ».\n\nII. - ' + $('#amendement').val().replace('premier', 'troisième'));
 		$('#article-pjl-ppl').val('Bonne année ' + (date.getFullYear()-1) + ' !\n\n-- Sinon voici l’exemple réel ci-dessous ------\n\n' + $('#article-pjl-ppl').val());
 	}
 
