@@ -537,7 +537,7 @@ if __name__ == "__main__":
     httpd = http.server.HTTPServer(('127.0.0.1', 8081), DuraLexSedLexHTTPRequestHandler)
     sa = httpd.socket.getsockname()
     t = time.time()
-    print(time.strftime('[%d/%b/%Y %H:%M:%S')+('%.5f]'%(t-int(t)))[1:], "***", "Serving HTTP on", sa[0], "port", sa[1], "...")
+    print("***", time.strftime('[%d/%b/%Y %H:%M:%S')+('%.5f]'%(t-int(t)))[1:], "***", "Serving HTTP on", sa[0], "port", sa[1], "...")
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

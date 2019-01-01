@@ -17,6 +17,14 @@ $( function() {
 
 	$('#article-pjl-ppl').val('Au sixième alinéa de l’article 16 de la Constitution, les mots : « soixante députés ou soixante sénateurs » sont remplacés par les mots : « quarante députés ou quarante sénateurs ».');
 
+	console.log(new Date().getMonth());
+	console.log(new Date().getDate());
+	var date = new Date();
+	if( date.getMonth() == 0 && date.getDate() < 10 ) {
+		$('#amendement').val('I. - Au premier alinéa, remplacer le mot « ' + (date.getFullYear()-1) + ' » par « ' + date.getFullYear() + ' ».\n\nII. - ' + $('#amendement').val().replace('premier', 'troisième'));
+		$('#article-pjl-ppl').val('Bonne année ' + (date.getFullYear()-1) + ' !\n\n-- Sinon voici l’exemple réel ci-dessous ------\n\n' + $('#article-pjl-ppl').val());
+	}
+
 	$('#amendement, #article-pjl-ppl').keyup( function(e) {
 
 		if( e.originalEvent.keyCode !== 13 || e.originalEvent.ctrlKey !== true ) {
