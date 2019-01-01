@@ -308,6 +308,7 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             #self.printTree(tree)
             duralex.ResolveLookbackReferencesVisitor().visit(tree)
             duralex.ForkReferenceVisitor().visit(tree)
+            duralex.ForkEditVisitor().visit(tree)
             duralex.ResolveFullyQualifiedDefinitionsVisitor().visit(tree)
             duralex.ResolveFullyQualifiedReferencesVisitor().visit(tree)
             duralex.FixMissingCodeOrLawReferenceVisitor().visit(tree)
