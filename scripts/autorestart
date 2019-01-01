@@ -19,7 +19,6 @@ trap sigint_handler INT TERM
 while true; do
   python3 server.py &
   PID=$!
-  inotifywait -e modify -r `pwd` -r /opt/DuraLex/duralex -r /opt/SedLex/sedlex >/dev/null 2>/dev/null
+  inotifywait -e close_write -r `pwd` -r /opt/DuraLex/duralex -r /opt/SedLex/sedlex >/dev/null 2>/dev/null
   kill $PID
-  sleep 1
 done
