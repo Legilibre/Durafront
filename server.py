@@ -450,11 +450,7 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                     raise Exception('Not coherent (1)')
                 if len(ins_chars) != coords[3]:
                     raise Exception('Not coherent (2)')
-                #print(coords)
-                #print(del_chars)
-                #print(ins_chars)
                 if coords[3] > 0:
-                    #print('add')
 
                     len_ins_html = len(ins_html)
 
@@ -465,8 +461,6 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                     interval = interval[0]
                     if not exactdiffsArticle['merge_indexes'][interval]:
                         raise Exception('Merge conflict: another amendment already deleted all or a part of this modified text')
-                    #print(interval)
-                    #print(exactdiffsArticle['merge_indexes'])
 
                     # The "new index" is in the current text (possibly with already-inserted pieces of new texts)
                     new_index = exactdiffsArticle['merge_indexes'][interval][0] + coords[0] - interval[0]
@@ -485,13 +479,7 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                         exactdiffsArticle['merge_indexes'][(interval[0], coords[0])] = (im_interval[0], im_interval[0]+coords[0]-interval[0])
                         exactdiffsArticle['merge_indexes'][(coords[0], interval[1])] = (im_interval[1]+len_ins_html-interval[1]+coords[0], im_interval[1]+len_ins_html)
 
-                    #old_index = min([x for x in exactdiffsArticle['merge_indexes'].keys() if x >= coords[0]])
-                    #new_index = exactdiffsArticle['merge_indexes'][old_index]
-                    #text = text[:new_index] + ins_html + text[new_index:]
-                    #exactdiffsArticle['merge_indexes'][old_index] = new_index + len(ins_html)
-                    #print(exactdiffsArticle['merge_indexes'])
                 if coords[1] != 0:
-                    #print('remove')
 
                     len_del_html = len(del_html)-coords[1]
 
@@ -504,8 +492,6 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                         raise Exception('Merge conflict: another amendment already deleted all or a part of this modified text')
                     if coords[0] + coords[1] > interval[1]:
                         raise Exception('Merge conflict: we want to remove a piece of text already modified by another amendment')
-                    #print(interval)
-                    #print(exactdiffsArticle['merge_indexes'])
 
                     # The "new index" is in the current text (possibly with already-inserted pieces of new texts)
                     new_index = exactdiffsArticle['merge_indexes'][interval][0] + coords[0] - interval[0]
@@ -526,12 +512,6 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                     if coords[0] != interval[0]:
                         exactdiffsArticle['merge_indexes'][(interval[0], coords[0])] = (im_interval[0], im_interval[0]+coords[0]-interval[0])
 
-                    #print(exactdiffsArticle['merge_indexes'])
-                    #print((interval, im_interval,coords,len_del_html))
-                    #old_index = min([x for x in exactdiffsArticle['merge_indexes'].keys() if x >= coords[0]])
-                    #new_index = exactdiffsArticle['merge_indexes'][old_index]
-                    #text = text[:new_index] + ins_html + text[new_index:]
-                    #exactdiffsArticle['merge_indexes'][old_index] = new_index + len(ins_html)
                 coords = None
                 if exactdiffsArticle['type'] == None:
                     if type == 'add':
@@ -542,12 +522,8 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                         exactdiffsArticle['type'] = 'modified'
                 elif type != 'modify':
                     raise Exception('Merge error: we tried to add or remove an article and then modify it')
-            
-        #print(lines)
-        #print(exactdiff)
+
         exactdiffsArticle['text'] = text
-        #print('in ' + editOperation)
-        #print(text)
 
         return exactdiffsArticle
 

@@ -32,7 +32,6 @@ $( function() {
 		$.ajax({
 			'type': 'POST',
 			'url': '/durafront/server/diff',
-			//'data': $('#amendement').val(),
 			'data': JSON.stringify( { 'texteAmendement': $('#amendement').val(), 'texteArticle': $('#article-pjl-ppl').val() } ),
 			'timeout': 120 * 1000,
 			'dataType': 'json',
