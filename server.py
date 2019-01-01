@@ -179,12 +179,12 @@ class DuraLexSedLexHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             article = re.sub('’', "'", article)
             article = re.sub('‑', '-', article) # U+2011 → U+002D
             article = re.sub(' ', ' ', article) # U+00A0 → U+0020
-            article = re.sub(r'( *»|« *)', '"', article)
+            #article = re.sub(r'( *»|« *)', '"', article)
         if amendement:
             amendement = re.sub('’', "'", amendement)
             amendement = re.sub('‑', '-', amendement) # U+2011 → U+002D
             amendement = re.sub(' ', ' ', amendement) # U+00A0 → U+0020
-            amendement = re.sub(r'( *»|« *)', '"', amendement)
+            #amendement = re.sub(r'( *»|« *)', '"', amendement)
 
         json_tree = ''
         diff = ''
