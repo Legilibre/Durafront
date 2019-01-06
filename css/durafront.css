@@ -111,19 +111,22 @@ p {
 	background-color: lightsalmon;
 }
 
-#div-pjpl ins {
+div.texte div.article p ins, div.texte div.article p del {
+	box-decoration-break: clone;
+	padding: 0 1px;
+}
+
+div.texte div.article p ins {
 	background-color: chartreuse;
 	text-decoration: none;
 }
 
-#div-pjpl del {
+div.texte div.article p del {
 	background-color: lightsalmon;
 	text-decoration: none;
 }
 
 #div-pjpl del + ins, #div-pjpl ins + del {
-	padding-left: 0.1em;
-	padding-right: 0.1em;
 	margin-left: 1px;
 }
 
